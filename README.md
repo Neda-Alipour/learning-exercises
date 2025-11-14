@@ -11,6 +11,7 @@ The goal of this repo is to track my progress, stay organized, and keep all lear
 Exercises are organized by topic or course.
 Example structure:
 
+```
 learning-exercises/
 ├── python/
 │   ├── course-name/
@@ -24,6 +25,8 @@ learning-exercises/
 │   ├── html/
 │   ├── css/
 │   └── projects/
+
+```
 
 🎯 Purpose
 
