@@ -44,12 +44,19 @@ app.post("/add", async (req, res)=>{
   var country = req.body.country
 
   // Make sure the country name has first uppercase letter
-  country = country.charAt(0).toUpperCase() + country.slice(1)
+  country = country.charAt(0).toUpperCase() + country.slice(1).toLowerCase()
 
   const result = await db.query(
-    "SELECT country_code FROM countries WHERE country_name = ($1)", 
+    "SELECT country_code FROM countries WHERE country_name LIKE '%' || $1 || '%' ", 
     [country]
   );
+
+  // Angela Yu Solution 
+  // const result = await db.query(
+  //     "SELECT country_code FROM countries WHERE LOWER(country_name) LIKE '%' || $1 || '%';",
+  //     [input.toLowerCase()]
+  //   );
+  // she used try catch for the rest of the code
 
   const country_code = result.rows.length !== 0 ? result.rows[0].country_code : null
   
