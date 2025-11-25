@@ -27,19 +27,37 @@ app.get("/", async (req, res) => {
   res.render("index.ejs", { countries: visited_countries, total: visited_countries.length })
 });
 
-app.post("/add", async (req, res)=>{
-  let country = req.body.country
-  country = country.charAt(0).toUpperCase() + country.slice(1)
-  const country_code = await db.query("SELECT country_code FROM countries WHERE country_name=$1", [country])
 
-  if (country_code.rows.length !== 0) {
-    const result = await db.query("INSERT INTO visited_countries (country_code) VALUES ($1)", [country_code.rows[0].country_code])
-    // console.log(result.rows)
-  } else {
+app.post("/add", async (req, res)=>{
+  var country = req.body.country
+
+  // Make sure the country name has first uppercase letter
+  country = country.charAt(0).toUpperCase() + country.slice(1)
+
+  const result = await db.query(
+    "SELECT country_code FROM countries WHERE country_name=$1", 
+    [country]
+  );
+
+  const country_code = result.rows.length !== 0 ? result.rows[0].country_code : null
+
+  if (!country_code) {
     console.log("Not a valid country name.")
+    res.redirect("/")
+  }
+
+  // Check if the country is already in visited_country table
+  const visited = await db.query(
+    "SELECT country_code FROM visited_countries WHERE country_code = ($1)", [country_code]
+  );
+
+  if (visited.rows.length === 0) {
+    await db.query(
+      "INSERT INTO visited_countries (country_code) VALUES ($1)", 
+      [country_code]
+    );
   }
   res.redirect("/")
-
 })
 
 app.listen(port, () => {
