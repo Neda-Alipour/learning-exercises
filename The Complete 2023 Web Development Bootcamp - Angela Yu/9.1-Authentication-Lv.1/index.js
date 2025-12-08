@@ -46,13 +46,13 @@ app.post("/register", async (req, res) => {
   const password = req.body.password
   const user = await getUserByEmail(email)
   if (user.length > 0){
-    console.log("User is already exists.")
+    console.log("User already exists.")
+    return res.redirect("/")
   } else {
     const newUserId = await addUser(email, password)
     console.log("User successfully added.")
     return res.render("secrets.ejs");
   }
-  res.redirect("/")
 });
 
 app.post("/login", async (req, res) => {
@@ -65,11 +65,12 @@ app.post("/login", async (req, res) => {
       return res.render("secrets.ejs");
     } else {
       console.log("Incorrect password.")
+      return res.redirect("/")
     }
   } else {
     console.log("User not found.")
+    return res.redirect("/")
   }
-  return res.redirect("/")
 });
 
 app.listen(port, () => {
