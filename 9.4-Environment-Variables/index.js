@@ -5,21 +5,20 @@ import bcrypt from "bcrypt";
 import passport from "passport";
 import { Strategy } from "passport-local";
 import session from "express-session";
+import env from "dotenv";
 
 const app = express();
 const port = 3000;
 const saltRounds = 10;
-
-// The order of these middlewares are very important
+env.config();
 
 app.use(
   session({
-    secret: "VERYSENSITIVEDATA",
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
   })
 );
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
@@ -27,25 +26,16 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 const db = new pg.Client({
-  user: "postgres",
-  host: "localhost",
-  database: "secrets",
-  password: "Woody25!",
-  port: 5432,
+  user: process.env.PG_USER,
+  host: process.env.PG_HOST,
+  database: process.env.PG_DATABASE,
+  password: process.env.PG_PASSWORD,
+  port: process.env.PG_PORT,
 });
 db.connect();
 
 app.get("/", (req, res) => {
   res.render("home.ejs");
-});
-
-app.get("/secrets", (req, res) => {
-  // console.log(req.user)
-  if (req.isAuthenticated()){
-    res.render("secrets.ejs");
-  } else {
-    res.redirect("/login")
-  }
 });
 
 app.get("/login", (req, res) => {
@@ -55,6 +45,32 @@ app.get("/login", (req, res) => {
 app.get("/register", (req, res) => {
   res.render("register.ejs");
 });
+
+app.get("/logout", (req, res) => {
+  req.logout(function (err) {
+    if (err) {
+      return next(err);
+    }
+    res.redirect("/");
+  });
+});
+
+app.get("/secrets", (req, res) => {
+  // console.log(req.user);
+  if (req.isAuthenticated()) {
+    res.render("secrets.ejs");
+  } else {
+    res.redirect("/login");
+  }
+});
+
+app.post(
+  "/login",
+  passport.authenticate("local", {
+    successRedirect: "/secrets",
+    failureRedirect: "/login",
+  })
+);
 
 app.post("/register", async (req, res) => {
   const email = req.body.username;
@@ -66,21 +82,17 @@ app.post("/register", async (req, res) => {
     ]);
 
     if (checkResult.rows.length > 0) {
-      res.send("Email already exists. Try logging in.");
+      req.redirect("/login");
     } else {
-      //hashing the password and saving it in the database
       bcrypt.hash(password, saltRounds, async (err, hash) => {
         if (err) {
           console.error("Error hashing password:", err);
         } else {
-          console.log("Hashed Password:", hash);
-          // We need the new user information
           const result = await db.query(
-            "INSERT INTO users (email, password) VALUES ($1, $2) RETURNING * ",
+            "INSERT INTO users (email, password) VALUES ($1, $2) RETURNING *",
             [email, hash]
           );
-          const user = result.rows[0]
-          // now we need login method from passport instead of res.render("secrets.ejs");
+          const user = result.rows[0];
           req.login(user, (err) => {
             console.log("success");
             res.redirect("/secrets");
@@ -93,40 +105,38 @@ app.post("/register", async (req, res) => {
   }
 });
 
-app.post("/login", passport.authenticate("local", {
-    successRedirect: "/secrets",
-    failureRedirect: "/login",
-  }));
-
-// You have to use "username" and "password" as names of your form inputs. they should match with verify params 
-passport.use(new Strategy(async function verify(username, password, cb){
-  // All of these came from login section
-  try {
-    const result = await db.query("SELECT * FROM users WHERE email = $1", [
-      username,
-    ]);
-    if (result.rows.length > 0) {
-      const user = result.rows[0];
-      const storedHashedPassword = user.password;
-      bcrypt.compare(password, storedHashedPassword, (err, result) => {
-        if (err) {
-          return cb(err)
-        } else {
-          if (result) {
-            return cb(null, user)
+passport.use(
+  new Strategy(async function verify(username, password, cb) {
+    try {
+      const result = await db.query("SELECT * FROM users WHERE email = $1 ", [
+        username,
+      ]);
+      if (result.rows.length > 0) {
+        const user = result.rows[0];
+        const storedHashedPassword = user.password;
+        bcrypt.compare(password, storedHashedPassword, (err, valid) => {
+          if (err) {
+            //Error with password check
+            console.error("Error comparing passwords:", err);
+            return cb(err);
           } else {
-            return cb(null, false)
+            if (valid) {
+              //Passed password check
+              return cb(null, user);
+            } else {
+              //Did not pass password check
+              return cb(null, false);
+            }
           }
-        }
-      });
-    } else {
-      return cb("User not found");
+        });
+      } else {
+        return cb("User not found");
+      }
+    } catch (err) {
+      console.log(err);
     }
-  } catch (err) {
-    console.log(err);
-  }
-
-}))
+  })
+);
 
 passport.serializeUser((user, cb) => {
   cb(null, user);
