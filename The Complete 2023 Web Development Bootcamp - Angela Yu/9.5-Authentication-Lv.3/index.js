@@ -174,7 +174,7 @@ passport.use(
         ]);
         if (result.rows.length === 0) {
           const newUser = await db.query(
-            "INSERT INTO users (email, password) VALUES ($1, $2)",
+            "INSERT INTO users (email, password) VALUES ($1, $2) RETURNING *",
             [profile.email, "google"]
           );
           return cb(null, newUser.rows[0]);
