@@ -6,7 +6,7 @@ This repository contains all of my programming exercises, challenges, and small 
 
 The goal of this repo is to track my progress, stay organized, and keep all learning materials in one place.
 
-🔧 Structure
+# Structure
 
 Exercises are organized by topic or course.
 Example structure:
@@ -28,7 +28,7 @@ learning-exercises/
 
 ```
 
-🎯 Purpose
+# Purpose
 
 Keep all practice code in one repository
 
@@ -38,7 +38,7 @@ Make it easier to review and revisit older exercises
 
 Share my work publicly on GitHub
 
-🧠 Topics I’m Learning
+# Topics I’m Learning
 
 Python
 
@@ -56,7 +56,7 @@ Data structures
 
 Web development basics
 
-🚀 How I Use This Repository
+# How I Use This Repository
 
 Each folder represents a topic or course
 
@@ -64,7 +64,7 @@ Exercises inside are named clearly
 
 Some folders include notes or explanations
 
-📌 Future Plans
+# Future Plans
 
 Add more exercises from ongoing courses
 
