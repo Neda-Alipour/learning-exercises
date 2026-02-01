@@ -12,8 +12,7 @@ from sqlalchemy.orm import Session
 
 import models
 from database import Base, engine, get_db
-from schemas import PostCreate, PostResponse, UserCreate, UserResponse
-from schemas import PostCreate, PostResponse
+from schemas import PostCreate, PostUpdate, PostResponse, UserCreate, UserResponse
 
 Base.metadata.create_all(bind=engine)
 
@@ -174,6 +173,22 @@ def get_post(post_id: int, db: db_dependency):
         return post
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
 
+@app.delete(
+        "/api/posts/{post_id}", 
+        status_code=status.HTTP_204_NO_CONTENT
+        )
+def delete_post(post_id: int, db:db_dependency):
+    result = db.execute(select(models.Post).where(models.Post.id == post_id))
+    post = result.scalars().first()
+
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Post not found"
+        )
+    
+    db.delete(post)
+    db.commit()
 
 @app.exception_handler(StarletteHTTPException)
 def general_http_exception_handler(request: Request, exception: StarletteHTTPException):
