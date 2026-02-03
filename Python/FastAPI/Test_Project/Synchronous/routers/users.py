@@ -118,7 +118,7 @@ def get_user(user_id: int, db: db_dependency):
 
 @router.get("/{user_id}/posts", response_model=list[PostResponse])
 def get_user_posts(user_id: int, db: db_dependency):
-    result = db.execute(select(models.User).where(models.User.id == user_id))
+    result = db.execute(select(models.User).where(models.User.id == user_id).order_by(models.Post.date_posted.desc()))
     user = result.scalars().first()
     if not user:
         raise HTTPException(

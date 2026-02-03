@@ -21,7 +21,7 @@ db_dependency = Annotated[Session, Depends(get_db)]
 
 @router.get("", response_model=list[PostResponse])
 def get_posts(db: db_dependency):
-    result = db.execute(select(models.Post))
+    result = db.execute(select(models.Post).order_by(models.Post.date_posted.desc()))
     posts = result.scalars().all()
     return posts
 

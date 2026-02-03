@@ -36,7 +36,7 @@ app.mount("/media", StaticFiles(directory="media"), name="media")
 def home(request: Request, db: db_dependency): # Dependency Injection for database session. 
 
     # why execute select? why not just query all? because SQLAlchemy 2.0 style uses select() statements instead of query() method 
-    result = db.execute(select(models.Post))
+    result = db.execute(select(models.Post).order_by(models.Post.date_posted.desc()))
     posts = result.scalars().all()
     return templates.TemplateResponse(
         "home.html", 
@@ -71,7 +71,8 @@ def user_posts_page(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found",
         )
-    result = db.execute(select(models.Post).where(models.Post.user_id == user_id))
+    
+    result = db.execute(select(models.Post).where(models.Post.user_id == user_id).order_by(models.Post.date_posted.desc()))
     posts = result.scalars().all()
     return templates.TemplateResponse(
         request,
