@@ -1,0 +1,9 @@
+[
+    {"id": 15656, "weight": 2.2, "content": "Glass", "status": "placed"},
+    {"id": 15657, "weight": 5.0, "content": "Books", "status": "shipped"},
+    {"id": 15658, "weight": 8.3, "content": "Ceramics", "status": "delivered"},
+    {"id": 15659, "weight": 1.1, "content": "Electronics", "status": "pending"},
+    {"id": 15660, "weight": 12.5, "content": "Furniture", "status": "in transit"},
+    {"id": 15661, "weight": 0.9, "content": "Jewelry", "status": "picked up"},
+    {"id": 15662, "weight": 4.7, "content": "Clothing", "status": "processing"}
+]
