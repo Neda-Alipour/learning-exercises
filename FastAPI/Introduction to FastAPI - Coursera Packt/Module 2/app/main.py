@@ -62,9 +62,9 @@ def patch_shipment(id: int, shipment: ShipmentUpdate):
     # why we need to use model_dump(exclude_unset=True) is because we want to update only the fields that are provided in the request body. If we don't use exclude_unset=True, then all the fields in the ShipmentUpdate model will be included in the dictionary, even if they are not provided in the request body. This can lead to overwriting existing values with None or default values, which is not what we want. By using exclude_unset=True, we ensure that only the fields that are explicitly set in the request body are included in the dictionary, and the existing values for other fields remain unchanged.
     # shipments[id].update(body.model_dump(exclude_unset=True))
 
-    shipment = db.update(id, shipment)
+    updated_shipment = db.update(id, shipment)
 
-    return shipment
+    return updated_shipment
 
 
 @app.delete("/shipment")
