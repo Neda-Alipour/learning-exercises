@@ -1,13 +1,9 @@
-from enum import Enum
+from datetime import datetime
 from random import randint
 
 from pydantic import BaseModel, Field
 
-class ShipmentStatus(str, Enum):
-    placed = "placed"
-    in_transit = "in_transit"
-    out_for_delivery = "out_for_delivery"
-    delivered = "delivered"
+from app.database.models import ShipmentStatus
 
 
 def random_destination():
@@ -21,17 +17,15 @@ class BaseShipment(BaseModel):
 
 class ShipmentRead(BaseShipment):
     status: ShipmentStatus
-
+    estimated_delivery: datetime
 
 class ShipmentCreate(BaseShipment):
     pass
 
 
 class ShipmentUpdate(BaseModel):
-    content: str | None= Field(default=None)
-    weight: float | None = Field(default=None)
-    destination: int | None = Field(default=None)
-    status: ShipmentStatus
+    status: ShipmentStatus | None = Field(default=None)
+    estimated_delivery: datetime | None = Field(default=None)
 
 # we can also create a separate Order model and include it in the ShipmentCreate model as a nested model. This way, we can validate the order data separately and ensure that it is included in the shipment data.
 # class Order(BaseModel):
