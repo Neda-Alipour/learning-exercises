@@ -9,6 +9,7 @@ from passlib.context import CryptContext
 from app.config import security_settings
 from app.api.schemas.seller import SellerCreate
 from app.database.models import Seller
+from app.utils import generate_access_token
 
 password_context = CryptContext(schemes=["bcrypt"])
 
@@ -33,24 +34,20 @@ class SellerService:
             select(Seller).where(Seller.email == email)
         )
         seller = result.scalar()
+        print(seller, password_context.verify(password, seller.password_hash))
 
-        if seller is None or password_context.verify(password, seller.password_hash):
+        if seller is None or not password_context.verify(password, seller.password_hash):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="email or password is incorrect"
             )
 
-        token = jwt.encode(
-            payload={
-                "user": {
-                    "name": seller.name,
-                    "email": seller.email,
-                },
-                "exp": datetime.now() + timedelta(days=1)
-            },
-            algorithm=security_settings.JWT_ALGORITHM,
-            key=security_settings.JWT_SECRET,
-        )
+        token = generate_access_token(data={
+            "user":{
+                "name": seller.name,
+                "id": seller.id
+            }
+        })
         
         return token
 

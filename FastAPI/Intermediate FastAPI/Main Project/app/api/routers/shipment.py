@@ -2,7 +2,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
 
-from app.api.schemas.dependencies import ShipmentServiceDep
+from app.api.schemas.dependencies import SellerDep, ShipmentServiceDep
 from app.api.schemas.shipment import ShipmentCreate, ShipmentRead, ShipmentUpdate
 from app.database.models import Shipment
 
@@ -10,7 +10,7 @@ router = APIRouter(prefix="/shipment", tags=["Shipment"])
 
 
 @router.get("/", response_model=ShipmentRead)
-async def get_shipment(id: int, service: ShipmentServiceDep):
+async def get_shipment(id: int, seller: SellerDep, service: ShipmentServiceDep):
 
     # shipment = ShipmentService(session).get(id)
     shipment = await service.get(id)
@@ -29,6 +29,7 @@ async def get_shipment(id: int, service: ShipmentServiceDep):
 
 @router.post("/")
 async def submit_shipment(
+    seller: SellerDep,
     shipment: ShipmentCreate,
     service: ShipmentServiceDep,
 ) -> Shipment:
@@ -38,6 +39,7 @@ async def submit_shipment(
 
 @router.patch("/", response_model=ShipmentRead)
 async def patch_shipment(
+    seller: SellerDep,
     id: int,
     shipment_update: ShipmentUpdate,
     service: ShipmentServiceDep,
@@ -61,7 +63,11 @@ async def patch_shipment(
 
 
 @router.delete("/")
-async def delete_shipment(id: int, service: ShipmentServiceDep) -> dict[str, Any]:
+async def delete_shipment(
+    seller: SellerDep,
+    id: int,
+    service: ShipmentServiceDep,
+) -> dict[str, Any]:
     # shipments.pop(id)
 
     await service.delete(id)
